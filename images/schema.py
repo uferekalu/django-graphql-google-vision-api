@@ -76,6 +76,20 @@ class UploadImage(graphene.Mutation):
     def mutate(self, info, image):
         if info.context.FILES and info.context.method == 'POST':
             the_file = info.context.FILES['image']
+            """Detects faces in an image."""
+            client = vision.ImageAnnotatorClient()
+
+            image = vision.Image(content=the_file.read())
+            response = client.face_detection(image=image)
+            faces = response.face_annotations
+
+            if len(faces) == 0:
+                # No Face detected, Ask to retry
+                ok = False
+                raise Exception(
+                    'No Face Detected. Upload Another Image: ')
+                return
+            # Face detected, Proceed to save Image
             ok = True
             image_instance = Image.objects.create(image=the_file)
             return UploadImage(ok=ok, id=image_instance.id)

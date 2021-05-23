@@ -11,6 +11,9 @@ Object identifier on images using [Django](https://www.djangoproject.com/)
 and [GraphQL](https://graphql.org/) as the API
 
 
+## New Feature - Face Detection
+Rejects images without with no face detected
+
 ## How to Use
 
 GET IMAGES
