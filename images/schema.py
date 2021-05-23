@@ -29,11 +29,11 @@ class Query(ObjectType):
             image.source.image_uri = this_image.image.url
 
             objects = client.object_localization(image=image).localized_object_annotations
-            img_labels = ""
+            img_objects = ""
             for object_ in objects:
-                img_labels += ('%s (%.2f%%),' % (object_.name, object_.score*100))
+                img_objects += ('%s (%.2f%%),' % (object_.name, object_.score*100))
             
-            this_image.labels = img_labels
+            this_image.img_objects = img_objects
             return this_image
         return None
     
@@ -48,11 +48,11 @@ class Query(ObjectType):
             image.source.image_uri = this_image.image.url
 
             objects = client.object_localization(image=image).localized_object_annotations
-            img_labels = ""
+            img_objects = ""
             for object_ in objects:
-                img_labels += ('%s (%.2f%%),' % (object_.name, object_.score*100))
+                img_objects += ('%s (%.2f%%),' % (object_.name, object_.score*100))
 
-            this_image.labels = img_labels
+            this_image.img_objects = img_objects
         return images
     
 # Create Input Object Types

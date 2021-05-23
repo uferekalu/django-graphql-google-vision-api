@@ -14,7 +14,7 @@ def image_upload(instance, filename):
 
 class Image(models.Model):
     image = models.ImageField(upload_to=image_upload)
-    labels = models.CharField(max_length=1000, null=True, blank=True)
+    img_objects = models.CharField(max_length=1000, null=True, blank=True)
     url = models.CharField(max_length=300, null=True, blank=True)
 
     def __str__(self):
