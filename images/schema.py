@@ -84,10 +84,10 @@ class DeleteImage(graphene.Mutation):
     class Arguments:
         id = graphene.ID()
 
-    def mutate(cls, root, info, **kwargs):
+    def mutate(cls, info, **kwargs):
         image_instance = Image.objects.get(pk=kwargs["id"])
         image_instance.delete()
-        return cls(ok=True)
+        return DeleteImage(ok=True)
 
 
 class ImageMutation(graphene.ObjectType):
