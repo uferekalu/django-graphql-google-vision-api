@@ -27,6 +27,19 @@ class Image(models.Model):
 def image_url_post_save_receiver(sender, instance, created, *args, **kwargs):
     if created:
         instance.url = instance.image.url
+
+        # Google Vision API
+        client = vision.ImageAnnotatorClient()
+        image = vision.Image()
+        image.source.image_uri = instance.image.url
+
+        objects = client.object_localization(image=image).localized_object_annotations
+        img_objects = ""
+        for object_ in objects:
+            img_objects += ('%s (%.2f%%),' % (object_.name, object_.score*100))
+        
+        instance.img_objects = img_objects
+
         instance.save()
 
 post_save.connect(image_url_post_save_receiver, sender=Image)

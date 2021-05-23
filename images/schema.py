@@ -25,15 +25,16 @@ class Query(ObjectType):
             if this_image.url == None:
                 this_image.url = this_image.image.url
 
-            image = vision.Image()
-            image.source.image_uri = this_image.image.url
+            if this_image.img_objects == None or len(this_image.img_objects) == 0:
+                image = vision.Image()
+                image.source.image_uri = this_image.image.url
 
-            objects = client.object_localization(image=image).localized_object_annotations
-            img_objects = ""
-            for object_ in objects:
-                img_objects += ('%s (%.2f%%),' % (object_.name, object_.score*100))
-            
-            this_image.img_objects = img_objects
+                objects = client.object_localization(image=image).localized_object_annotations
+                img_objects = ""
+                for object_ in objects:
+                    img_objects += ('%s (%.2f%%),' % (object_.name, object_.score*100))
+                
+                this_image.img_objects = img_objects
             return this_image
         return None
     
@@ -44,15 +45,17 @@ class Query(ObjectType):
         for this_image in images:
             if this_image.url == None:
                 this_image.url = this_image.image.url
-            image = vision.Image()
-            image.source.image_uri = this_image.image.url
 
-            objects = client.object_localization(image=image).localized_object_annotations
-            img_objects = ""
-            for object_ in objects:
-                img_objects += ('%s (%.2f%%),' % (object_.name, object_.score*100))
+            if this_image.img_objects == None or len(this_image.img_objects) == 0:
+                image = vision.Image()
+                image.source.image_uri = this_image.image.url
 
-            this_image.img_objects = img_objects
+                objects = client.object_localization(image=image).localized_object_annotations
+                img_objects = ""
+                for object_ in objects:
+                    img_objects += ('%s (%.2f%%),' % (object_.name, object_.score*100))
+
+                this_image.img_objects = img_objects
         return images
     
 # Create Input Object Types
