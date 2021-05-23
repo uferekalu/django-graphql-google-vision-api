@@ -20,9 +20,17 @@ from django.conf import settings
 from django.conf.urls.static import static
 from . import settings as projsettings
 
+from django.views.decorators.csrf import csrf_exempt
+
+from graphene_django.views import GraphQLView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('images.urls')),
+    path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
+
+    # path('django-rq/', include('django_rq.urls'))
+    
 ]
 
 if projsettings.DEBUG:

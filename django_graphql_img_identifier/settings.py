@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 from pathlib import Path
 
+from decouple import config, Csv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,17 +22,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '7fnc=is!gsxpj#a&ij6dr*)bekavbmj96adr+-m)h5!h%p99wj'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+# ALLOWED_HOSTS = ["django_graphql_img_identifier.ew.r.appspot.com",]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'graphene_django',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,6 +44,10 @@ INSTALLED_APPS = [
 
     'images',
 ]
+
+GRAPHENE = {
+    'SCHEMA': 'django_graphql_img_identifier.schema.schema'
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -75,12 +83,53 @@ WSGI_APPLICATION = 'django_graphql_img_identifier.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# [START db_setup]
+if os.getenv('GAE_APPLICATION', None):
+    DEBUG = False
+    # Running on production App Engine, so connect to Google Cloud SQL using
+    # the unix socket at /cloudsql/<your-cloudsql-connection string>
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('MYAPP_DB_NAME'),
+            'USER': os.getenv('MYAPP_DB_USER'),
+            'PASSWORD': os.getenv('MYAPP_DB_PASSWORD'),
+            'HOST': os.getenv('MYAPP_DB_HOST'),
+        }
     }
-}
+else:
+    # Running locally so connect to either a local MySQL instance or connect to
+    # Cloud SQL via the proxy. To start the proxy via command line:
+    #
+    #     $ cloud_sql_proxy -instances=[INSTANCE_CONNECTION_NAME]=tcp:3306
+    #
+    # See https://cloud.google.com/sql/docs/mysql-connect-proxy
+    # We're running locally
+    DEBUG = True
+    if os.getenv('PROXY_TO_PROD'):
+        # Proxy the database connection
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'HOST': '127.0.0.1',
+                'PORT': '3307',
+                'NAME': os.getenv('MYAPP_DB_NAME'),
+                'USER': os.getenv('MYAPP_DB_USER'),
+                'PASSWORD': os.getenv('MYAPP_DB_PASSWORD'),
+            }
+        }
+    else:
+        # Run backed by a local MySQL database
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': config('DB_NAME'),
+                'USER': config('DB_USER'),
+                'PASSWORD': config('DB_PASSWORD'),
+                'HOST': config('DB_HOST'),
+                'PORT': '',
+            }
+        }
 
 
 # Password validation
@@ -121,9 +170,17 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
-MEDIA_URL = 'file_uploads/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media_root')
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+# STATICFILES_DIRS = [
+#     BASE_DIR / "asset",
+# ]
+STATICFILES_DIRS = (('', os.path.join(BASE_DIR, 'assets')),)
+
+if os.getenv('GAE_APPLICATION'):
+    DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+    GS_BUCKET_NAME = 'django_images_bucket01'
+    GS_DEFAULT_ACL = 'publicRead' 
+    MEDIA_URL = 'https://storage.googleapis.com/django_images_bucket01/'
+else:
+    MEDIA_URL = 'file_uploads/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media_root')

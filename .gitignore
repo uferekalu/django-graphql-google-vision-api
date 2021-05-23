@@ -15,8 +15,14 @@ __pycache__
 .idea/* 
 .env
 
+
+.gcloudignore
+
 # static/*
 media_root/*
 static_root/*
 
 django-graphql-imageid-5c3d16e83692.json
+private_gae_env.yaml
+proxy_manage_py.sh
+deploy.sh
